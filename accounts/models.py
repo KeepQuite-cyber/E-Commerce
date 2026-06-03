@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser , BaseUserManager
 
-
 class MyAccountManager(BaseUserManager):
     def create_user(self , first_name , last_name , username , email , password=None):
         if not email:
@@ -10,15 +9,15 @@ class MyAccountManager(BaseUserManager):
         if not username:
             raise ValueError("User must have an username")
         
-        user = self.model(
-            email = self.normalize_email(email),
+        user = self.model( # models method comes indirectly from parent class because parent class inherits Django's Manager system .
+            email = self.normalize_email(email), # comes from parent class
             username = username,
             first_name = first_name,
             last_name = last_name
-        )
+        ) # Object Creation 
 
-        user.set_password(password)
-        user.save(using=self._db)
+        user.set_password(password) # Hashing the password , 
+        user.save(using=self._db) # Comes from Django's Manager infrastructure.
         return user
     
     def create_superuser(self, first_name , last_name , email , username , password):
@@ -36,8 +35,6 @@ class MyAccountManager(BaseUserManager):
         user.is_superadmin = True
         user.save(using=self._db)
         return user
-
-
 
 class Account(AbstractBaseUser):
     first_name = models.CharField(max_length=50)
