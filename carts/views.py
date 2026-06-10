@@ -1,7 +1,9 @@
 from django.shortcuts import render , redirect
-from store.models import Product
+from store.models import Product , Variation
 from .models import Cart , CartItem
+from django.http import HttpResponse
 # Create your views here.
+
 
 def _cart_id(request):
     cart = request.session.session_key
@@ -13,12 +15,21 @@ def _cart_id(request):
     return cart
 
 def add_cart(request , product_id):
-    color = request.GET['color']
-    size = request.GET['size']
-
-    print(color +' '+ size)
-
     product = Product.objects.get(id=product_id)
+    product_variation = []
+    if request.method == 'POST':
+        for item in request.POST:
+            key = item
+            value = request.POST[key]
+            
+            try:
+                variation = Variation.objects.get(product = product , 
+                                                  variation_category__iexact=key , variation_value__iexact=value)
+                product_variation.append(variation)
+            except:
+                pass
+
+    
     # print("Product fetched by ID" , product)
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
@@ -30,6 +41,11 @@ def add_cart(request , product_id):
     
     try:
         cart_item = CartItem.objects.get(product=product, cart=cart) # argument me left side wala models ka field hai aur right side wala product object hai jo uper liya gya hai.
+
+        if len(product_variation) > 0:
+            cart_item.variations.clear()
+            for item in product_variation:
+                cart_item.variations.add(item)
         cart_item.quantity += 1
         cart_item.save()
     
@@ -39,6 +55,10 @@ def add_cart(request , product_id):
             quantity = 1,
             cart = cart
         )
+        if len(product_variation) > 0:
+            cart_item.variations.clear()
+            for item in product_variation:
+                cart_item.variations.add(item)
         cart_item.save()
     return redirect('cart')
 
