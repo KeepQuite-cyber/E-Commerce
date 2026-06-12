@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .forms import RegistrationForm
 from .models import Account
+from django.contrib import messages,auth
+from django.contrib.auth.decorators import login_required
+
 # Create your views here.
 def register(request):
     if request.method == "POST":
@@ -16,6 +19,10 @@ def register(request):
             user = Account.objects.create_user(first_name=first_name , last_name=last_name , email=email, username=username, password=password)
             user.phone_number = phone_number
             user.save()
+            print(email)
+            print(password)
+            messages.success(request, 'Registration successful.')
+            return redirect('register')
     else:
         form = RegistrationForm()
     context = {
@@ -23,10 +30,29 @@ def register(request):
     }
     return render(request , 'accounts/register.html' , context)
 
-
 def login(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+        print(email)
+        print(password)
+
+        user = auth.authenticate(request,email=email,password=password)
+        print(user)
+
+        if user is not None:
+            auth.login(request , user)
+            messages.success(request , 'You are logged in.')
+            return redirect('home')
+        
+        else:
+            messages.error(request, 'Invalid Login Credentials.')
+            return redirect('login')
     return render(request , 'accounts/login.html')
 
 
+@login_required(login_url='login')
 def logout(request):
-    return 
+    auth.logout(request)
+    messages.success(request , 'Logout successfully')
+    return redirect('login')
