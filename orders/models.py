@@ -2,8 +2,6 @@ from django.db import models
 from accounts.models import Account
 from store.models import Product , Variation
 
-
-
 class Payment(models.Model):
     user = models.ForeignKey(Account , on_delete=models.CASCADE)
     payment_id = models.CharField(max_length=100)
@@ -47,7 +45,7 @@ class Order(models.Model):
 
 
     def __str__(self):
-        return self.user.first_name
+        return self.first_name
     
 
 class OrderProduct(models.Model):
@@ -65,4 +63,4 @@ class OrderProduct(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.product.product.product_name
+        return self.product.product_name
